@@ -1,5 +1,5 @@
 `define MEM_DEPTH (1024)
-module memory (clock, address, data_out);
+module icache (clock, address, data_out);
 	input clock;
 	input [31:0] address;
 	output [31:0] data_out;
@@ -12,7 +12,7 @@ module memory (clock, address, data_out);
 	reg [31:0] data [0:`MEM_DEPTH/4];
 	integer i;
 
-	always @(*) begin
+	always @(posedge clock) begin
 		data_out = {memory[(address-start_address)],memory[(address-start_address) + 1],memory[(address-start_address)+ 2],memory[(address-start_address)+3]};
 	end
 	initial begin
