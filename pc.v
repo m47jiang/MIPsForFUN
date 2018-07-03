@@ -8,7 +8,16 @@ module programCounter(clock, currentpc, nextpc);
 		$display("Starting PC: %h",currentpc);
 	end
 	always @(posedge clock) begin
-		currentpc = nextpc;
-		$display("current PC: %h",currentpc);
+		$display("nextPC: %h",nextpc);
+		if(currentpc == 32'h80020000)
+		begin
+			//$display("true PC: %h",currentpc);
+			currentpc = currentpc + 4;
+		end
+		else
+		begin
+			//$display("false PC: %h",currentpc);
+			currentpc = nextpc;
+		end
 	end
 endmodule //pc

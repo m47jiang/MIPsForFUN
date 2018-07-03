@@ -15,7 +15,7 @@ module registerfile (clock, address_s1, address_s2, address_d, data_dval, data_s
 	initial begin
 		for(i = 4'b0000; i < 32; i= i+ 1) begin
 			registers[i] = i;
-			$display("Initialize %h - %h",i, registers[i]);
+			//$display("Initialize %h - %h",i, registers[i]);
 		end
 	end
 
@@ -35,7 +35,7 @@ module registerfile (clock, address_s1, address_s2, address_d, data_dval, data_s
 		
 		data_s1val = registers[address_s1];
 		data_s2val = registers[address_s2];
-		$display("Read	Adress1 = %h, value = %h	Adress2 = %h, value = %h",address_s1, data_s1val, address_s2, data_s2val);
+		$display("RegRead	Adress1 = %h, value = %h	Adress2 = %h, value = %h",address_s1, data_s1val, address_s2, data_s2val);
 
 	end
 endmodule //registerfile

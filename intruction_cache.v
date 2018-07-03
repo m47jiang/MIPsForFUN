@@ -21,8 +21,8 @@ module icache (clock, address, data_out);
 			memory[i + 3] = data[i/4][7:0];
 
 		end
-		$display("memory is %h", memory[0]);
 		$display("Finish reading");
+
 	end
 	always @(posedge clock) begin
 		data_out = {memory[(address-start_address)],memory[(address-start_address) + 1],memory[(address-start_address)+ 2],memory[(address-start_address)+3]};

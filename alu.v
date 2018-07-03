@@ -8,7 +8,7 @@ module alu(in_s1, in_s2, alu_opcode, zero, res, Branch);
 	reg [31:0] low;
 	reg [31:0] high;
 	output reg Branch;
-	always @(*) begin
+	always @(in_s1) begin
 		case(alu_opcode)
 			4'b0000:begin
 			//ADD
