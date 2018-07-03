@@ -1,17 +1,17 @@
-module memory (clock, address, data_in, data_out, read_write, enable);
+module memory (clock, address, data_in, data_out, read_write, enable, isByte);
 	input clock;
 	input [31:0] address;
 	input [31:0] data_in;
-	output [31:0] data_out;
+	input isByte;
+	output reg [31:0] data_out;
 	input read_write;
 	input enable;
 
-	reg [7:0] memory[`MEM_DEPTH/4-1:0];
-	reg data_out;
+	reg [7:0] memory[1024/4-1:0];
 	reg [31:0]start_address = 32'h80020000;
 
 	always @(posedge clock) begin
-		if(~read_write & enable) 
+		if(~read_write & enable & ~isByte) 
 			begin
 				// compute offset address for memory register
 				memory[(address-start_address)] <= data_in[31:24];	
@@ -20,14 +20,27 @@ module memory (clock, address, data_in, data_out, read_write, enable);
 				memory[(address-start_address) + 3] <= data_in[7:0];
 
 			end
-	end
-	
-	always @(*) begin
-		if(read_write & enable)
+		if(~read_write & enable & isByte) 
 			begin
-				data_out = {memory[(address-start_address)],memory[(address-start_address) + 1],memory[(address-start_address)+ 2],memory[(address-start_address)+3]};
-				address = address + 4;
+				// compute offset address for memory register
+				memory[(address-start_address)] <= data_in[31:24];	
+				memory[(address-start_address) + 1] <= 8'h00;
+				memory[(address-start_address) + 2] <= 8'h00;
+				memory[(address-start_address) + 3] <= 8'h00;
+
 			end
 	end
+	
+	always @(negedge clock) begin
+		if(read_write & enable & ~isByte)
+			begin
+				data_out = {memory[(address-start_address)],memory[(address-start_address) + 1],memory[(address-start_address)+ 2],memory[(address-start_address)+3]};
+			end
+		if(read_write & enable & isByte)
+			begin
+				data_out = {memory[(address-start_address)]};
+			end
+	end
+
 
 endmodule //memory

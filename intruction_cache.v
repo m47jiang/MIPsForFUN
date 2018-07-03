@@ -11,21 +11,22 @@ module icache (clock, address, data_out);
 	//for loading purposes
 	reg [31:0] data [0:`MEM_DEPTH/4];
 	integer i;
-
-	always @(posedge clock) begin
-		data_out = {memory[(address-start_address)],memory[(address-start_address) + 1],memory[(address-start_address)+ 2],memory[(address-start_address)+3]};
-	end
 	initial begin
 		$readmemh("BubbleSort.x", data);
 
 		for(i=0;data[i] || data[i] == 0;i=i+4) begin
-			memory[start_address +i] <= data_[i/4][31:24];
-			memory[start_address +i + 1] <= data_[i/4][23:16];
-			memory[start_address +i + 2] <= data_[i/4][15:8];
-			memory[start_address +i + 3] <= data_[i/4][7:0];
-			 
+			memory[i] = data[i/4][31:24];
+			memory[i + 1] = data[i/4][23:16];
+			memory[i + 2] = data[i/4][15:8];
+			memory[i + 3] = data[i/4][7:0];
 
 		end
+		$display("memory is %h", memory[0]);
+		$display("Finish reading");
 	end
+	always @(posedge clock) begin
+		data_out = {memory[(address-start_address)],memory[(address-start_address) + 1],memory[(address-start_address)+ 2],memory[(address-start_address)+3]};
+	end
+
 
 endmodule //memory

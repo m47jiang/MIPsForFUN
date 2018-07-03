@@ -31,7 +31,7 @@ module registerfile (clock, address_s1, address_s2, address_d, data_dval, data_s
 		end
 	end
 
-	always @(posedge negedge) begin
+	always @(negedge clock) begin
 		
 		data_s1val = registers[address_s1];
 		data_s2val = registers[address_s2];
