@@ -35,16 +35,16 @@ module dut;
 		
 		#10;
 		write_enable = 0;
-		address_s1 = 4'b1000;
+		address_s1 = 5'h1f;
 
 		#10;
 		write_enable = 1;
-		address_d = 4'b1000;
-		address_s1 = 4'b1000;
+		address_d = 5'h1f;
+		address_s1 = 5'h1d;
 		data_dval = 5'b1111;
 		#10;
 		write_enable = 0;
-		address_s1 = 4'b1000;
+		address_s1 = 5'h1f;
 		#10;
 		
 

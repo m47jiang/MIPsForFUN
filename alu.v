@@ -8,7 +8,7 @@ module alu(in_s1, in_s2, alu_opcode, zero, res, Branch);
 	reg [31:0] low;
 	reg [31:0] high;
 	output reg Branch;
-	always @(in_s1) begin
+	always @(in_s2) begin
 		case(alu_opcode)
 			4'b0000:begin
 			//ADD
@@ -87,9 +87,9 @@ module alu(in_s1, in_s2, alu_opcode, zero, res, Branch);
 			end
 			5'b10000:begin
 			//JALR
-				res = in_s1;
+				res = in_s2;
 				zero = res? 0: 1;
-				$display(" JUMP TO %h",in_s1);
+				$display(" JUMP TO %h",in_s2);
 			end
 			5'b10001:begin
 			//BEQ
@@ -166,6 +166,7 @@ module alu(in_s1, in_s2, alu_opcode, zero, res, Branch);
 			end
 			5'b11100:begin
 			//SW
+				$display("input1 : %h, input2: %h ",in_s1, in_s2);
 				res = in_s1 + in_s2;
 				zero = res? 0: 1;
 				$display("SW : %h ",in_s1, res);

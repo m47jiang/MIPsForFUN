@@ -1,4 +1,4 @@
-`define MEM_DEPTH (1024)
+`define MEM_DEPTH (100000)
 module icache (clock, address, data_out);
 	input clock;
 	input [31:0] address;
@@ -14,7 +14,7 @@ module icache (clock, address, data_out);
 	initial begin
 		$readmemh("BubbleSort.x", data);
 
-		for(i=0;data[i] || data[i] == 0;i=i+4) begin
+		for(i=0; i < `MEM_DEPTH/4;i=i+4) begin
 			memory[i] = data[i/4][31:24];
 			memory[i + 1] = data[i/4][23:16];
 			memory[i + 2] = data[i/4][15:8];
@@ -24,8 +24,10 @@ module icache (clock, address, data_out);
 		$display("Finish reading");
 
 	end
-	always @(posedge clock) begin
+	always @(posedge clock | address) begin
+		
 		data_out = {memory[(address-start_address)],memory[(address-start_address) + 1],memory[(address-start_address)+ 2],memory[(address-start_address)+3]};
+		// $display("IC: adress = %h, instruction = %h", address, data_out);
 	end
 
 

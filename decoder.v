@@ -1,32 +1,34 @@
-module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, alu_opcode, readwrite, Jump, Branch, ALUSrc, MemEnable, RegWrite, RegToImmediate, MemtoReg, Jump, isByte);
+module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, alu_opcode, readwrite, Jump, Branch, ALUSrc, MemEnable, RegWrite, RegToImmediate, MemtoReg, Jump, isByte, linkAddress, linkSignal);
 	input [31:0] instruction;
 	input [31:0] pc;
 
-	wire [5:0] opcode = instruction[31:26];
-	wire [4:0] rs = instruction[25:21];
-	wire [4:0] base = instruction[25:21];
-	wire [25:0] target = instruction[25:0];
-	wire [4:0] rt = instruction[20:16];
-	wire [4:0] rd = instruction[15:11];
-	wire [15:0] offset = instruction[15:0];
-	wire [15:0] immed = instruction[15:0];
-	wire [5:0] sa = instruction[10:6];
-	wire [5:0] sOpcode = instruction[5:0];
+	reg [5:0] opcode;
+	reg [4:0] rs;
+	reg [4:0] base;
+	reg [25:0] target;
+	reg [4:0] rt;
+  reg [4:0] rd;
+	reg [15:0] offset;
+	reg [15:0] immed;
+	reg [5:0] sa;
+	reg [5:0] sOpcode;
 	
 	output reg [4:0] address_s1;
 	output reg [4:0] address_s2;
 	output reg [4:0] address_d;
 	output reg [31:0] immediate;
+	output reg [31:0] linkAddress;
 	output reg [5:0] alu_opcode;
 	output reg readwrite;
 	output reg Jump;		
 	output reg Branch;	
-    output reg ALUSrc;  	
+  output reg ALUSrc;  	
 	output reg MemEnable;	
 	output reg RegWrite; 	
 	output reg RegToImmediate;
 	output reg MemtoReg;	
 	output reg isByte;
+	output reg linkSignal;
 	
 	initial begin
 		Jump = 0;	
@@ -38,10 +40,22 @@ module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, a
 		RegToImmediate = 0;
 		readwrite = 0;
 		isByte = 0;
+		linkSignal = 0;
 	end
 
 	
 	always @(instruction) begin
+		opcode = instruction[31:26];
+		rs = instruction[25:21];
+		base = instruction[25:21];
+		target = instruction[25:0];
+		rt = instruction[20:16];
+  	rd = instruction[15:11];
+		offset = instruction[15:0];
+		immed = instruction[15:0];
+		sa = instruction[10:6];
+		sOpcode = instruction[5:0];
+
 		Jump = 0;	
 		Branch = 0;
 		ALUSrc = 0;
@@ -51,11 +65,14 @@ module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, a
 		RegToImmediate = 0;
 		readwrite = 0;
 		isByte = 0;
+		linkSignal = 0;
+		$display("Instruction: %h", instruction);
+		$display("Opcode: %h", opcode);
 		case(opcode)
 			6'b000000:begin
 				case(sOpcode)
 					6'b100000:begin
-						$display("%h    %h    ADD R%0d, R%0d, R%0d", pc , pc , instruction, rs, rt, rd); 
+						$display("%h    %h    ADD R%0d, R%0d, R%0d", pc , instruction, rd, rs, rt); 
 						address_s1 = rs;
 						address_s2 = rt;
 						address_d = rd;
@@ -63,7 +80,7 @@ module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, a
 						RegWrite = 1;
 					end
 					6'b100001:begin
-						$display("%h    %h    ADDU R%0d, R%0d, R%0d", pc , pc , instruction, rs, rt, rd);
+						$display("%h    %h    ADDU R%0d, R%0d, R%0d", pc , instruction, rd, rs, rt);
 						address_s1 = rs;
 						address_s2 = rt;
 						address_d = rd;
@@ -71,7 +88,7 @@ module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, a
 						RegWrite = 1;
 					end
 					6'b100010:begin
-						$display("%h    %h    SUB R%0d, R%0d, R%0d", pc , pc , instruction, rs, rt, rd);
+						$display("%h    %h    SUB R%0d, R%0d, R%0d", pc , instruction, rs, rt, rd);
 						address_s1 = rs;
 						address_s2 = rt;
 						address_d = rd;
@@ -79,7 +96,7 @@ module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, a
 						RegWrite = 1;
 					end
 					6'b100011:begin
-						$display("%h    %h    SUBU R%0d, R%0d, R%0d", pc , pc , instruction, rs, rt, rd);
+						$display("%h    %h    SUBU R%0d, R%0d, R%0d", pc , instruction, rs, rt, rd);
 						address_s1 = rs;
 						address_s2 = rt;
 						address_d = rd;
@@ -326,6 +343,7 @@ module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, a
 				readwrite = 1;
 				MemEnable = 1;
 				ALUSrc = 1;
+				$display("base: %h, address_s2: %h", base, rt);
 				address_s1 = base;
 				address_s2 = rt;
 				immediate = offset;
@@ -378,22 +396,25 @@ module decoder (instruction, pc, address_s1, address_s2, address_d, immediate, a
 			end
 			6'b000010:begin
 				$display("%h    %h    J 0x%h", pc , instruction, target);
-				immediate = target;
+				immediate = (target << 2)|(pc & 32'hF0000000);
 				alu_opcode = 5'b10001;
-				address_d = rt;
+				//address_d = rt;
 				Jump =1;			
 				
 			end
 			6'b000011:begin
-				$display("%h    %h    JAL 0x%h", pc , instruction, target);
+				
 				address_d = 32'd31;						
-				address_s2 = rs;						
+				//address_s2 = rs;						
 				alu_opcode = 5'b10000;
 				Jump = 1;
-				RegToImmediate = 1;
+				//RegToImmediate = 1;
 				RegWrite = 1;
-				immediate = pc;
-				ALUSrc = 1;				
+				immediate = (target << 2)|(pc & 32'hF0000000);
+				ALUSrc = 1;			
+				linkSignal = 1;
+				linkAddress = pc+8;	
+				$display("%h    %h    JAL 0x%h, immediate = %h", pc , instruction, target, immediate);
 				//TODO;
 			end
 			6'b000100:begin
